@@ -1,5 +1,6 @@
 import { StatusBar } from "expo-status-bar";
-import * as React from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import {
   ImageBackground,
   StyleSheet,
@@ -8,10 +9,26 @@ import {
   SafeAreaView,
   TouchableOpacity,
 } from "react-native";
+import { IndexList } from "./IndexList";
 
 const background = require("../assets/background.png");
 
 export function IndexView() {
+  const [asteroidData, setAsteroidData] = React.useState(null);
+
+  React.useEffect(() => {
+    async function fetchData() {
+      if (!asteroidData) {
+        const { data } = await axios.get(
+          "https://api.nasa.gov/neo/rest/v1/feed?start_date=2015-09-07&end_date=2015-09-08&api_key=DEMO_KEY"
+        );
+        setAsteroidData(data);
+      }
+    }
+    fetchData();
+    console.log(asteroidData);
+  }, []);
+
   return (
     <SafeAreaView style={styles.container}>
       <ImageBackground style={styles.bgImage} source={background}>
@@ -21,6 +38,9 @@ export function IndexView() {
           <TouchableOpacity style={styles.button}>
             <Text style={styles.buttonText}>Options</Text>
           </TouchableOpacity>
+        </View>
+        <View style={styles.indexPanel}>
+          <IndexList data={asteroidData} />
         </View>
       </ImageBackground>
     </SafeAreaView>
@@ -63,6 +83,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     padding: 6,
     // backgroundColor: "red",
+  },
+  indexPanel: {
+    padding: 30,
+    backgroundColor: "red",
   },
   // text: {
   // color: "white",
