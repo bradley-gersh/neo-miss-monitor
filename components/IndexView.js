@@ -19,15 +19,23 @@ export function IndexView() {
   React.useEffect(() => {
     async function fetchData() {
       if (!asteroidData) {
-        const { data } = await axios.get(
-          "https://api.nasa.gov/neo/rest/v1/feed?start_date=2015-09-07&end_date=2015-09-08&api_key=DEMO_KEY"
-        );
-        setAsteroidData(data);
+        const rawData = require("../sampleData/sampleData.json");
+        // const rawData = await axios.get(
+        // "https://api.nasa.gov/neo/rest/v1/feed?start_date=2015-09-07&end_date=2015-09-08&api_key=DEMO_KEY"
+        // );
+        console.log(rawData);
+        if (rawData) {
+          const cleanData = Object.values(rawData.near_earth_objects).reduce(
+            (dateArray, allAsteroids) => allAsteroids.concat(dateArray),
+            []
+          );
+          setAsteroidData(cleanData);
+        }
       }
     }
     fetchData();
     console.log(asteroidData);
-  }, []);
+  }, [asteroidData]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -40,7 +48,7 @@ export function IndexView() {
           </TouchableOpacity>
         </View>
         <View style={styles.indexPanel}>
-          <IndexList data={asteroidData} />
+          <IndexList asteroidData={asteroidData} />
         </View>
       </ImageBackground>
     </SafeAreaView>
@@ -86,7 +94,7 @@ const styles = StyleSheet.create({
   },
   indexPanel: {
     padding: 30,
-    backgroundColor: "red",
+    // backgroundColor: "red",
   },
   // text: {
   // color: "white",
