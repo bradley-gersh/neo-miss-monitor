@@ -61,15 +61,13 @@ export function IndexCard({ asteroid }) {
       >
         <View style={styles.centerView}>
           <TouchableOpacity
-            style={
-              distance <= 19.5 ? styles.detailCardWarning : styles.detailCard
-            }
+            style={isHazard ? styles.detailCardWarning : styles.detailCard}
             onPress={() => {
               setModalVisible(!modalVisible);
             }}
           >
             <View>
-              <Text style={styles.indexCardName}>{name}</Text>
+              <Text style={styles.detailCardName}>{name}</Text>
             </View>
             <View>
               {isHazard ? (
@@ -81,11 +79,14 @@ export function IndexCard({ asteroid }) {
               )}
             </View>
             <View>
-              <Text>
-                Approximate size: {approx(maxSize)} ({maxSize})
+              <Text style={styles.indexCardText}>
+                Size: {approx(maxSize)}
+                {maxSize} ft long
               </Text>
-              <Text>Approach distance: {distance} Lunar distances</Text>
-              <Text>
+              <Text style={styles.indexCardText}>
+                Approach distance: {distance} Lunar distances
+              </Text>
+              <Text style={styles.indexCardText}>
                 Time of closest approach: {dateString}, {timeString}
               </Text>
               <TouchableOpacity
@@ -93,24 +94,28 @@ export function IndexCard({ asteroid }) {
                   // await WebBrowser.openBrowserAsync({ nasaUrl });
                 }}
               >
-                <Text>NASA orbit diagram</Text>
+                <Text style={styles.indexCardText}>NASA orbit diagram</Text>
               </TouchableOpacity>
               <Button
                 onPress={async () => {
-                  console.log("******* I AM HEREEEEE3 ******");
                   // Following lines should be moved to the Options modal
                   await Notifications.requestPermissionsAsync();
                   const settings = await Notifications.getPermissionsAsync();
-                  console.log(
-                    settings.granted ||
-                      settings.ios?.status ===
-                        Notifications.IosAuthorizationStatus.PROVISIONAL
-                  );
+                  // console.log(
+                  // settings.granted ||
+                  // settings.ios?.status ===
+                  // Notifications.IosAuthorizationStatus.PROVISIONAL
+                  // );
                   // up to here
+                  const hazardTitle = isHazard ? `⚠ ` : ``;
+                  const hazardBody = isHazard ? `Potential hazard. ` : "";
                   await Notifications.scheduleNotificationAsync({
                     content: {
-                      title: "Passing Asteroid",
-                      body: `${name} is now passing Earth (${distance} Lunar distances)`,
+                      title:
+                        hazardTitle + `Asteroid ${asteroid.name} passing Earth`,
+                      body:
+                        hazardBody +
+                        `${asteroid.maxSize} ft long, ${asteroid.distance} Lunar distances.`,
                     },
                     trigger: null,
                   });
@@ -122,7 +127,7 @@ export function IndexCard({ asteroid }) {
         </View>
       </Modal>
       <TouchableOpacity
-        style={distance <= 19.5 ? styles.indexCardWarning : styles.indexCard}
+        style={isHazard ? styles.indexCardWarning : styles.indexCard}
         onPress={() => {
           setModalVisible(!modalVisible);
         }}
@@ -137,15 +142,7 @@ export function IndexCard({ asteroid }) {
           </Text>
           <Text style={styles.indexCardText}>
             <Text>Lunar distances:{"\n"}</Text>
-            <Text
-              style={
-                distance <= 19.5
-                  ? styles.distanceTextWarning
-                  : styles.distanceText
-              }
-            >
-              {distance}
-            </Text>
+            <Text style={styles.distanceText}>{distance}</Text>
           </Text>
         </View>
       </TouchableOpacity>
@@ -156,7 +153,7 @@ export function IndexCard({ asteroid }) {
 const approx = (size) => {
   switch (size) {
     default:
-      return "big";
+      return "";
   }
 };
 
@@ -222,6 +219,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 5,
     margin: 10,
+    color: "white",
   },
   detailCardWarning: {
     opacity: 1,
@@ -233,8 +231,17 @@ const styles = StyleSheet.create({
     padding: 5,
     margin: 10,
   },
+  detailCardName: {
+    fontSize: 24,
+    color: "white",
+    textAlign: "center",
+    paddingTop: 10,
+    fontWeight: "bold",
+  },
   hazardText: {
+    paddingBottom: 10,
     color: "white",
     fontStyle: "italic",
+    textAlign: "center",
   },
 });
