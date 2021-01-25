@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { IndexList } from "./IndexList";
+import * as Notifications from "expo-notifications";
 
 const background = require("../assets/background.png");
 
@@ -19,23 +20,73 @@ export function IndexView() {
   React.useEffect(() => {
     async function fetchData() {
       if (!asteroidData) {
+        await Notifications.cancelAllScheduledNotificationsAsync();
         const rawData = require("../sampleData/sampleData.json");
         // const rawData = await axios.get(
         // "https://api.nasa.gov/neo/rest/v1/feed?start_date=2015-09-07&end_date=2015-09-08&api_key=DEMO_KEY"
         // );
-        console.log(rawData);
+        // console.log(rawData);
         if (rawData) {
-          const cleanData = Object.values(rawData.near_earth_objects).reduce(
+          const asteroidsOnly = Object.values(
+            rawData.near_earth_objects
+          ).reduce(
             (dateArray, allAsteroids) => allAsteroids.concat(dateArray),
             []
           );
+          const cleanData = reformatData(asteroidsOnly);
           setAsteroidData(cleanData);
+          // scheduleNotifications();
         }
       }
     }
     fetchData();
-    console.log(asteroidData);
+    // console.log(asteroidData);
   }, [asteroidData]);
+
+  const reformatData = (asteroidsOnly) => {
+    return asteroidsOnly.map((asteroid) => {
+      let name = asteroid.name;
+      if (name[0] === "(" && name[name.length - 1] === ")") {
+        name = name.slice(1, name.length - 1);
+      }
+      const distance =
+        Math.round(asteroid.close_approach_data[0].miss_distance.lunar * 10) /
+        10;
+      let [
+        dateString,
+        timeString,
+      ] = asteroid.close_approach_data[0].close_approach_date_full.split(" ");
+      timeString += ` (UTC)`;
+
+      const nasaUrl = asteroid.nasa_jpl_url;
+      const maxSize = asteroid.estimated_diameter.feet.estimated_diameter_max;
+      // const roughSize = approx(maxSize);
+      const isHazard = asteroid.is_potentially_hazardous_asteroid;
+
+      return {
+        name,
+        distance,
+        dateString,
+        timeString,
+        nasaUrl,
+        maxSize,
+        isHazard,
+      };
+    });
+  };
+
+  const scheduleNotifications = async () => {
+    await Promise.all(
+      asteroidData.map((asteroid) => {
+        const notification = {
+          title: "Passing Asteroid",
+          body: `${asteroid.name}, ${Math.round(asteroid)}`,
+        };
+        const schedulingOptions = {};
+        return Notifications.scheduleLocalNotificationAsync();
+      })
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -93,7 +144,7 @@ const styles = StyleSheet.create({
     // backgroundColor: "red",
   },
   indexPanel: {
-    padding: 30,
+    paddingTop: 30,
     // backgroundColor: "red",
   },
   // text: {
