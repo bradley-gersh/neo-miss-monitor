@@ -45,6 +45,7 @@ export function IndexView() {
 
   const reformatData = (asteroidsOnly) => {
     return asteroidsOnly.map((asteroid) => {
+      const id = asteroid.id;
       let name = asteroid.name;
       if (name[0] === "(" && name[name.length - 1] === ")") {
         name = name.slice(1, name.length - 1);

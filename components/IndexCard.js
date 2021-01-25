@@ -1,6 +1,24 @@
 import * as React from "react";
-import { Modal, StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import {
+  Modal,
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Button,
+} from "react-native";
 import * as WebBrowser from "expo-web-browser";
+import * as Notifications from "expo-notifications";
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => {
+    return {
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+    };
+  },
+});
 
 export function IndexCard({ asteroid }) {
   // let name = asteroid.name;
@@ -72,11 +90,33 @@ export function IndexCard({ asteroid }) {
               </Text>
               <TouchableOpacity
                 onPress={async () => {
-                  await WebBrowser.openBrowserAsync({ nasaUrl });
+                  // await WebBrowser.openBrowserAsync({ nasaUrl });
                 }}
               >
                 <Text>NASA orbit diagram</Text>
               </TouchableOpacity>
+              <Button
+                onPress={async () => {
+                  console.log("******* I AM HEREEEEE3 ******");
+                  // Following lines should be moved to the Options modal
+                  await Notifications.requestPermissionsAsync();
+                  const settings = await Notifications.getPermissionsAsync();
+                  console.log(
+                    settings.granted ||
+                      settings.ios?.status ===
+                        Notifications.IosAuthorizationStatus.PROVISIONAL
+                  );
+                  // up to here
+                  await Notifications.scheduleNotificationAsync({
+                    content: {
+                      title: "Passing Asteroid",
+                      body: `${name} is now passing Earth (${distance} Lunar distances)`,
+                    },
+                    trigger: null,
+                  });
+                }}
+                title="Send Notification"
+              />
             </View>
           </TouchableOpacity>
         </View>
