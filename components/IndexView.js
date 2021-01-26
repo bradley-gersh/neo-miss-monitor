@@ -57,59 +57,79 @@ export function IndexView() {
             []
           );
           // FOR TESTING ONLY: Add a hazardous asteroid passing by in ten seconds.
-          const now = new Date(Date.now() + 1000 * 60);
+          const soon1 = new Date(Date.now() + 1000 * 10);
+          const soon2 = new Date(Date.now() + 1000 * 15);
           asteroidsOnly.push({
-            links: {
-              self:
-                "http://www.neowsapp.com/rest/v1/neo/2440012?api_key=j61KmanhEfIQUHCtW3XqzEwgfZT4Pw6zfF4SnJuE",
-            },
             id: "2440012",
-            neo_reference_id: "2440012",
-            name: "Sample Asteroid!",
+            name: "Sample Asteroid 1",
             nasa_jpl_url: "http://ssd.jpl.nasa.gov/sbdb.cgi?sstr=2440012",
-            absolute_magnitude_h: 19.3,
             estimated_diameter: {
-              kilometers: {
-                estimated_diameter_min: 0.3669061375,
-                estimated_diameter_max: 0.8204270649,
-              },
-              meters: {
-                estimated_diameter_min: 366.9061375314,
-                estimated_diameter_max: 820.4270648822,
-              },
-              miles: {
-                estimated_diameter_min: 0.2279848336,
-                estimated_diameter_max: 0.5097895857,
-              },
               feet: {
-                estimated_diameter_min: 1203.7603322587,
                 estimated_diameter_max: 2691.6899315481,
               },
             },
             is_potentially_hazardous_asteroid: true,
             close_approach_data: [
               {
-                close_approach_date: now.toISOString().slice(0, 10),
+                close_approach_date: soon1
+                  .toLocaleString("en-GB", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })
+                  .replace(/\ /g, "-"),
                 close_approach_date_full:
-                  now.toISOString().slice(0, 10) +
+                  soon1
+                    .toLocaleString("en-GB", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    })
+                    .replace(/\ /g, "-") +
                   " " +
-                  now.toISOString().slice(11, 16),
-                epoch_date_close_approach: now.valueOf(),
-                relative_velocity: {
-                  kilometers_per_second: "1.1630787733",
-                  kilometers_per_hour: "4187.0835837756",
-                  miles_per_hour: "2601.6909079299",
-                },
+                  soon1.toISOString().slice(11, 16),
+                epoch_date_close_approach: soon1.valueOf(),
                 miss_distance: {
-                  astronomical: "0.4981692661",
                   lunar: "19.7878445129",
-                  kilometers: "74525061.108023207",
-                  miles: "46307725.6547539766",
                 },
-                orbiting_body: "Earth",
               },
             ],
-            is_sentry_object: false,
+          });
+          asteroidsOnly.push({
+            id: "2440013",
+            name: "Sample Asteroid 2",
+            nasa_jpl_url: "http://ssd.jpl.nasa.gov/sbdb.cgi?sstr=2440012",
+            estimated_diameter: {
+              feet: {
+                estimated_diameter_max: 2691.6899315481,
+              },
+            },
+            is_potentially_hazardous_asteroid: false,
+            close_approach_data: [
+              {
+                close_approach_date: soon2
+                  .toLocaleString("en-GB", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })
+                  .replace(/\ /g, "-"),
+                close_approach_date_full:
+                  soon2
+                    .toLocaleString("en-GB", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    })
+                    .replace(/\ /g, "-") +
+                  " " +
+                  soon2.toISOString().slice(11, 16),
+                epoch_date_close_approach: soon2.valueOf(),
+                miss_distance: {
+                  lunar: "159.7878445129",
+                },
+              },
+            ],
           });
           const cleanData = reformatData(asteroidsOnly);
           setAsteroidData(cleanData);
@@ -120,6 +140,37 @@ export function IndexView() {
     fetchData();
     // console.log(asteroidData);
   }, [asteroidData]);
+
+  React.useEffect(() => {
+    setAsteroidData(updateTimeZone(asteroidData));
+  }, [utcOffset]);
+
+  const updateTimeZone = (asteroidsOnly) => {
+    if (asteroidsOnly) {
+      return asteroidsOnly.map((asteroid) => {
+        const newDate = asteroid.date + 60 * 60 * 1000 * utcOffset;
+        const newDateObj = new Date(newDate);
+        const newDateString = newDateObj
+          .toLocaleString("en-GB", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          })
+          .replace(/\ /g, "-");
+        const newTimeString =
+          newDateObj.toISOString().slice(11, 16) +
+          ` (UTC ${utcOffset < 0 ? utcOffset : `+${utcOffset}`})`;
+        return {
+          ...asteroid,
+          date: newDate,
+          dateString: newDateString,
+          timeString: newTimeString,
+        };
+      });
+    } else {
+      return null;
+    }
+  };
 
   const reformatData = (asteroidsOnly) => {
     return asteroidsOnly
@@ -139,7 +190,7 @@ export function IndexView() {
         timeString += ` (UTC)`;
         const date = asteroid.close_approach_data[0].epoch_date_close_approach;
 
-        const nasaUrl = asteroid.nasa_jpl_url;
+        const nasaUrl = asteroid.nasa_jpl_url + ";orb=1;cov=0;log=0;cad=0#orb";
         const maxSize = Number(
           Number.parseFloat(
             asteroid.estimated_diameter.feet.estimated_diameter_max

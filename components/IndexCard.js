@@ -84,7 +84,7 @@ export function IndexCard({ asteroid }) {
               </View>
               <TouchableOpacity
                 onPress={async () => {
-                  // await WebBrowser.openBrowserAsync({ nasaUrl });
+                  await WebBrowser.openBrowserAsync(nasaUrl);
                 }}
               >
                 <Text style={{ ...styles.indexCardText, marginBottom: 10 }}>
