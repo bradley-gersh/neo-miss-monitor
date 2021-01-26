@@ -21,23 +21,6 @@ Notifications.setNotificationHandler({
 });
 
 export function IndexCard({ asteroid }) {
-  // let name = asteroid.name;
-  // if (name[0] === "(" && name[name.length - 1] === ")") {
-  //   name = name.slice(1, name.length - 1);
-  // }
-  // const distance =
-  //   Math.round(asteroid.close_approach_data[0].miss_distance.lunar * 10) / 10;
-  // let [
-  //   date,
-  //   time,
-  // ] = asteroid.close_approach_data[0].close_approach_date_full.split(" ");
-  // time += ` (UTC)`;
-
-  // const nasaUrl = asteroid.nasa_jpl_url;
-  // const maxSize = asteroid.estimated_diameter.feet.estimated_diameter_max;
-  // const roughSize = approx(maxSize);
-  // const isHazard = asteroid.is_potentially_hazardous_asteroid;
-
   const {
     name,
     distance,
@@ -79,34 +62,37 @@ export function IndexCard({ asteroid }) {
               )}
             </View>
             <View>
-              <Text style={styles.indexCardText}>
-                Size: {approx(maxSize)}
-                {maxSize} ft long
-              </Text>
-              <Text style={styles.indexCardText}>
-                Approach distance: {distance} Lunar distances
-              </Text>
-              <Text style={styles.indexCardText}>
-                Time of closest approach: {dateString}, {timeString}
-              </Text>
+              <View style={styles.indexCardLine}>
+                <Text style={styles.indexCardText}>Size:</Text>
+                <Text style={styles.indexCardText}>
+                  {approx(maxSize)} {maxSize} ft long
+                </Text>
+              </View>
+              <View style={styles.indexCardLine}>
+                <Text style={styles.indexCardText}>Approach distance:</Text>
+                <Text style={styles.indexCardText}>
+                  {distance} Lunar distances
+                </Text>
+              </View>
+              <View style={{ marginTop: 10, marginBottom: 10 }}>
+                <Text style={styles.indexCardText}>
+                  Time of closest approach:
+                </Text>
+                <Text style={styles.indexCardText}>
+                  {dateString}, {timeString}
+                </Text>
+              </View>
               <TouchableOpacity
                 onPress={async () => {
                   // await WebBrowser.openBrowserAsync({ nasaUrl });
                 }}
               >
-                <Text style={styles.indexCardText}>NASA orbit diagram</Text>
+                <Text style={{ ...styles.indexCardText, marginBottom: 10 }}>
+                  Tap here for NASA orbit diagram
+                </Text>
               </TouchableOpacity>
-              <Button
+              {/* <Button
                 onPress={async () => {
-                  // Following lines should be moved to the Options modal
-                  await Notifications.requestPermissionsAsync();
-                  const settings = await Notifications.getPermissionsAsync();
-                  // console.log(
-                  // settings.granted ||
-                  // settings.ios?.status ===
-                  // Notifications.IosAuthorizationStatus.PROVISIONAL
-                  // );
-                  // up to here
                   const hazardTitle = isHazard ? `⚠ ` : ``;
                   const hazardBody = isHazard ? `Potential hazard. ` : "";
                   await Notifications.scheduleNotificationAsync({
@@ -121,7 +107,7 @@ export function IndexCard({ asteroid }) {
                   });
                 }}
                 title="Send Notification"
-              />
+              /> */}
             </View>
           </TouchableOpacity>
         </View>
@@ -164,16 +150,20 @@ const styles = StyleSheet.create({
     borderColor: "white",
     borderRadius: 10,
     padding: 5,
-    margin: 10,
+    marginTop: 20,
+    marginRight: 20,
+    marginLeft: 20,
     opacity: 1,
   },
   indexCardWarning: {
-    backgroundColor: "rgba(200, 0, 0, 0.5)",
+    backgroundColor: "rgba(255, 0, 50, 0.5)",
     borderWidth: 5,
     borderColor: "white",
     borderRadius: 10,
     padding: 5,
-    margin: 10,
+    marginTop: 20,
+    marginRight: 20,
+    marginLeft: 20,
     opacity: 1,
   },
   indexCardText: {
@@ -243,5 +233,9 @@ const styles = StyleSheet.create({
     color: "white",
     fontStyle: "italic",
     textAlign: "center",
+  },
+  indexCardLine: {
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
 });

@@ -29,6 +29,9 @@ export function IndexView() {
   const [optionsVisible, setOptionsVisible] = React.useState(false);
   const [utcOffset, setUtcOffset] = React.useState(0);
   const [notificationsOn, setNotificationsOn] = React.useState(false);
+  const [notificationsPermission, setNotificationsPermission] = React.useState(
+    false
+  );
 
   React.useEffect(() => {
     async function fetchData() {
@@ -43,9 +46,9 @@ export function IndexView() {
         // const rawData = require("../sampleData/sampleData.json");
 
         const rawData = await axios.get(
-          `https://api.nasa.gov/neo/rest/v1/feed?start_date=${todayString}&end_date=${tomorrowString}&api_key=DEMO_KEY`
+          `https://api.nasa.gov/neo/rest/v1/feed?start_date=${todayString}&end_date=${tomorrowString}&api_key=j61KmanhEfIQUHCtW3XqzEwgfZT4Pw6zfF4SnJuE`
         );
-        console.log(rawData.data.near_earth_objects);
+        // console.log(rawData.data.near_earth_objects);
         if (rawData) {
           const asteroidsOnly = Object.values(
             rawData.data.near_earth_objects
@@ -53,9 +56,64 @@ export function IndexView() {
             (dateArray, allAsteroids) => allAsteroids.concat(dateArray),
             []
           );
+          // FOR TESTING ONLY: Add a hazardous asteroid passing by in ten seconds.
+          const now = new Date(Date.now() + 1000 * 60);
+          asteroidsOnly.push({
+            links: {
+              self:
+                "http://www.neowsapp.com/rest/v1/neo/2440012?api_key=j61KmanhEfIQUHCtW3XqzEwgfZT4Pw6zfF4SnJuE",
+            },
+            id: "2440012",
+            neo_reference_id: "2440012",
+            name: "Sample Asteroid!",
+            nasa_jpl_url: "http://ssd.jpl.nasa.gov/sbdb.cgi?sstr=2440012",
+            absolute_magnitude_h: 19.3,
+            estimated_diameter: {
+              kilometers: {
+                estimated_diameter_min: 0.3669061375,
+                estimated_diameter_max: 0.8204270649,
+              },
+              meters: {
+                estimated_diameter_min: 366.9061375314,
+                estimated_diameter_max: 820.4270648822,
+              },
+              miles: {
+                estimated_diameter_min: 0.2279848336,
+                estimated_diameter_max: 0.5097895857,
+              },
+              feet: {
+                estimated_diameter_min: 1203.7603322587,
+                estimated_diameter_max: 2691.6899315481,
+              },
+            },
+            is_potentially_hazardous_asteroid: true,
+            close_approach_data: [
+              {
+                close_approach_date: now.toISOString().slice(0, 10),
+                close_approach_date_full:
+                  now.toISOString().slice(0, 10) +
+                  " " +
+                  now.toISOString().slice(11, 16),
+                epoch_date_close_approach: now.valueOf(),
+                relative_velocity: {
+                  kilometers_per_second: "1.1630787733",
+                  kilometers_per_hour: "4187.0835837756",
+                  miles_per_hour: "2601.6909079299",
+                },
+                miss_distance: {
+                  astronomical: "0.4981692661",
+                  lunar: "19.7878445129",
+                  kilometers: "74525061.108023207",
+                  miles: "46307725.6547539766",
+                },
+                orbiting_body: "Earth",
+              },
+            ],
+            is_sentry_object: false,
+          });
           const cleanData = reformatData(asteroidsOnly);
           setAsteroidData(cleanData);
-          scheduleNotifications();
+          await scheduleNotifications();
         }
       }
     }
@@ -102,30 +160,52 @@ export function IndexView() {
           isHazard,
         };
       })
+      .filter((asteroid) => asteroid.date > Date.now())
       .sort((asteroidA, asteroidB) => asteroidA.date - asteroidB.date);
   };
+
+  React.useEffect(() => {
+    const checkNotifications = async () => {
+      if (notificationsOn && !notificationsPermission) {
+        await Notifications.requestPermissionsAsync();
+        const settings = await Notifications.getPermissionsAsync();
+        if (
+          settings.granted ||
+          settings.ios?.status ===
+            Notifications.IosAuthorizationStatus.PROVISIONAL
+        ) {
+          setNotificationsPermission(true);
+          await scheduleNotifications();
+        } else {
+          await Notifications.cancelAllScheduledNotificationsAsync();
+        }
+      }
+    };
+
+    checkNotifications();
+  }, [notificationsOn, notificationsPermission]);
 
   const scheduleNotifications = async () => {
     if (asteroidData) {
       await Promise.all(
         asteroidData.map((asteroid) => {
-          if (asteroid.date > Date.now()) {
+          const trigger = asteroid.date - Date.now();
+          if (trigger > 2000) {
             const hazardTitle = asteroid.isHazard ? `⚠ ️` : ``;
             const hazardBody = asteroid.isHazard ? "Potential hazard. " : "";
-
-            const trigger = asteroid.date - Date.now();
-
-            Notifications.scheduleNotificationAsync({
+            return Notifications.scheduleNotificationAsync({
               content: {
                 title: hazardTitle + `Asteroid ${asteroid.name} passing Earth`,
                 body:
                   hazardBody +
                   `${asteroid.maxSize} ft long, ${asteroid.distance} Lunar distances.`,
               },
-              trigger,
+              trigger: {
+                seconds: trigger / 1000,
+              },
             });
-
-            return Notifications.scheduleLocalNotificationAsync();
+          } else {
+            return true;
           }
         })
       );
@@ -157,7 +237,7 @@ export function IndexView() {
           >
             <View style={styles.centerView}>
               <View style={styles.optionsCard}>
-                <Text style={styles.titleText}>OPTIONS</Text>
+                <Text style={styles.optionsTitleText}>OPTIONS</Text>
                 <View style={styles.optionsLine}>
                   <Text style={styles.optionsText}>Asteroid notifications</Text>
                   <Switch
@@ -188,13 +268,23 @@ export function IndexView() {
                     />
                   ))}
                 </Picker>
-                <TouchableOpacity
+                <View
+                  style={styles.optionsLine}
                   onPress={() => {
-                    setOptionsVisible(!optionsVisible);
+                    setAsteroidData(null);
                   }}
                 >
-                  <Text style={styles.optionsText}>Close</Text>
-                </TouchableOpacity>
+                  <TouchableOpacity>
+                    <Text style={styles.optionsText}>Refresh</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setOptionsVisible(!optionsVisible);
+                    }}
+                  >
+                    <Text style={styles.optionsText}>Close</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
           </Modal>
@@ -220,7 +310,7 @@ const styles = StyleSheet.create({
   },
   titleText: {
     color: "#eeeeee",
-    fontSize: 48,
+    fontSize: 40,
     fontFamily: "System",
     // backgroundColor: "pink",
   },
@@ -243,7 +333,7 @@ const styles = StyleSheet.create({
     // backgroundColor: "red",
   },
   indexPanel: {
-    paddingTop: 30,
+    paddingTop: 20,
     // backgroundColor: "red",
   },
   centerView: {
@@ -269,7 +359,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: "white",
   },
-  titleText: {
+  optionsTitleText: {
     fontSize: 24,
     color: "white",
     textAlign: "center",
