@@ -24,6 +24,14 @@ const formatDate = (date) =>
   "-" +
   ("" + date.getDate()).padStart(2, "0");
 
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
+
 export function IndexView() {
   const [asteroidData, setAsteroidData] = React.useState(null);
   const [optionsVisible, setOptionsVisible] = React.useState(false);
@@ -58,11 +66,11 @@ export function IndexView() {
             []
           );
           // FOR TESTING ONLY: Add a hazardous asteroid passing by in ten seconds.
-          const soon1 = new Date(Date.now() + 1000 * 60);
-          const soon2 = new Date(Date.now() + 1000 * 90);
+          const soon1 = new Date(Date.now() + 1000 * 30);
+          const soon2 = new Date(Date.now() + 1000 * 45);
           asteroidsOnly.push({
             id: "2440012",
-            name: "Cody Pug",
+            name: "Cody Pug [Fake]",
             nasa_jpl_url: "http://ssd.jpl.nasa.gov/sbdb.cgi?sstr=2440012",
             estimated_diameter: {
               feet: {
@@ -98,7 +106,7 @@ export function IndexView() {
           });
           asteroidsOnly.push({
             id: "2440013",
-            name: "Chester Tester",
+            name: "Chester Tester [Fake]",
             nasa_jpl_url: "http://ssd.jpl.nasa.gov/sbdb.cgi?sstr=2440012",
             estimated_diameter: {
               feet: {
@@ -174,6 +182,7 @@ export function IndexView() {
   };
 
   const reformatData = (asteroidsOnly) => {
+    const nowPlus24H = new Date(Date.now() + 24 * 60 * 60 * 1000 + 1);
     return asteroidsOnly
       .map((asteroid) => {
         const id = asteroid.id;
@@ -212,7 +221,10 @@ export function IndexView() {
           isHazard,
         };
       })
-      .filter((asteroid) => asteroid.date > Date.now())
+      .filter(
+        (asteroid) =>
+          asteroid.date > Date.now() && asteroid.date < nowPlus24H.valueOf()
+      )
       .sort((asteroidA, asteroidB) => asteroidA.date - asteroidB.date);
   };
 
@@ -350,7 +362,7 @@ export function IndexView() {
                   {utcArray.map((num) => (
                     <Picker.Item
                       key={num}
-                      color="white"
+                      color="#eeeeee"
                       label={num < 0 ? `UTC ${num}` : `UTC +${num}`}
                       value={num}
                     />
@@ -359,6 +371,7 @@ export function IndexView() {
                 <View style={styles.optionsLine}>
                   <TouchableOpacity
                     onPress={() => {
+                      setUtcOffset(0);
                       setAsteroidData(null);
                     }}
                   >
@@ -393,7 +406,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around",
     alignItems: "center",
-    // backgroundColor: "white",
+    // backgroundColor: "#eeeeee",
   },
   titleText: {
     color: "#eeeeee",
@@ -414,7 +427,7 @@ const styles = StyleSheet.create({
     // backgroundColor: "green",
   },
   buttonText: {
-    color: "white",
+    color: "#eeeeee",
     fontSize: 18,
     padding: 6,
     // backgroundColor: "red",
@@ -435,20 +448,20 @@ const styles = StyleSheet.create({
     marginTop: 20,
     backgroundColor: "rgba(80, 0, 80, 1)",
     borderWidth: 5,
-    borderColor: "white",
+    borderColor: "#eeeeee",
     borderRadius: 10,
     padding: 10,
     margin: 10,
-    color: "white",
+    color: "#eeeeee",
     width: "80%",
   },
   optionsText: {
     fontSize: 20,
-    color: "white",
+    color: "#eeeeee",
   },
   optionsTitleText: {
     fontSize: 24,
-    color: "white",
+    color: "#eeeeee",
     textAlign: "center",
     padding: 10,
     fontWeight: "bold",

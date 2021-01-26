@@ -23,15 +23,15 @@ const styles = StyleSheet.create({
     color: "#eeeeee",
   },
   text: {
-    color: "white",
+    color: "#eeeeee",
     backgroundColor: "yellow",
   },
   loadingText: {
-    color: "white",
+    color: "#eeeeee",
     fontStyle: "italic",
   },
   scrollPanel: {
-    marginBottom: 50,
+    marginBottom: 48,
   },
   centerView: {
     flex: 1,
