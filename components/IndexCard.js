@@ -176,11 +176,12 @@ const styles = StyleSheet.create({
   distanceText: {
     fontSize: 20,
     color: "white",
+    marginBottom: 20,
   },
   distanceTextWarning: {
     fontSize: 20,
-    // color: "rgba(255, 6, 0, 1)",
     color: "white",
+    marginBottom: 20,
   },
   indexCardInfo: {
     flexDirection: "row",

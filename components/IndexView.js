@@ -27,6 +27,7 @@ const formatDate = (date) =>
 export function IndexView() {
   const [asteroidData, setAsteroidData] = React.useState(null);
   const [optionsVisible, setOptionsVisible] = React.useState(false);
+  const [aboutVisible, setAboutVisible] = React.useState(false);
   const [utcOffset, setUtcOffset] = React.useState(0);
   const [notificationsOn, setNotificationsOn] = React.useState(false);
   const [notificationsPermission, setNotificationsPermission] = React.useState(
@@ -57,11 +58,11 @@ export function IndexView() {
             []
           );
           // FOR TESTING ONLY: Add a hazardous asteroid passing by in ten seconds.
-          const soon1 = new Date(Date.now() + 1000 * 10);
-          const soon2 = new Date(Date.now() + 1000 * 15);
+          const soon1 = new Date(Date.now() + 1000 * 60);
+          const soon2 = new Date(Date.now() + 1000 * 90);
           asteroidsOnly.push({
             id: "2440012",
-            name: "Sample Asteroid 1",
+            name: "Cody Pug",
             nasa_jpl_url: "http://ssd.jpl.nasa.gov/sbdb.cgi?sstr=2440012",
             estimated_diameter: {
               feet: {
@@ -90,14 +91,14 @@ export function IndexView() {
                   soon1.toISOString().slice(11, 16),
                 epoch_date_close_approach: soon1.valueOf(),
                 miss_distance: {
-                  lunar: "19.7878445129",
+                  lunar: "9.7878445129",
                 },
               },
             ],
           });
           asteroidsOnly.push({
             id: "2440013",
-            name: "Sample Asteroid 2",
+            name: "Chester Tester",
             nasa_jpl_url: "http://ssd.jpl.nasa.gov/sbdb.cgi?sstr=2440012",
             estimated_diameter: {
               feet: {
@@ -187,7 +188,7 @@ export function IndexView() {
           dateString,
           timeString,
         ] = asteroid.close_approach_data[0].close_approach_date_full.split(" ");
-        timeString += ` (UTC)`;
+        timeString += ` (UTC +0)`;
         const date = asteroid.close_approach_data[0].epoch_date_close_approach;
 
         const nasaUrl = asteroid.nasa_jpl_url + ";orb=1;cov=0;log=0;cad=0#orb";
@@ -279,8 +280,44 @@ export function IndexView() {
           >
             <Text style={styles.buttonText}>Options</Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setAboutVisible(!aboutVisible);
+            }}
+            style={styles.button}
+          >
+            <Text style={styles.buttonText}>About</Text>
+          </TouchableOpacity>
         </View>
         <View style={styles.indexPanel}>
+          <Modal animationType="fade" visible={aboutVisible} transparent="true">
+            <View style={styles.centerView}>
+              <View style={styles.optionsCard}>
+                <Text style={styles.optionsTitleText}>ABOUT</Text>
+                <View>
+                  <Text style={styles.optionsText}>
+                    All data in this app is taken from the public NASA NeoWs API
+                    and is in no way affiliated with any government entity.
+                    {"\n"}
+                  </Text>
+                  <Text style={styles.optionsText}>
+                    “Potentially hazardous” asteroids are those that are roughly
+                    500 ft or more in length and that can approach Earth within
+                    about 20 Lunar distances.{"\n"}
+                  </Text>
+                </View>
+                <View style={styles.optionsLine}></View>
+                <TouchableOpacity
+                  style={{ alignSelf: "flex-end", marginBottom: 10 }}
+                  onPress={() => {
+                    setAboutVisible(!aboutVisible);
+                  }}
+                >
+                  <Text style={styles.optionsText}>Close</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
           <Modal
             animationType="fade"
             visible={optionsVisible}
@@ -319,13 +356,12 @@ export function IndexView() {
                     />
                   ))}
                 </Picker>
-                <View
-                  style={styles.optionsLine}
-                  onPress={() => {
-                    setAsteroidData(null);
-                  }}
-                >
-                  <TouchableOpacity>
+                <View style={styles.optionsLine}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setAsteroidData(null);
+                    }}
+                  >
                     <Text style={styles.optionsText}>Refresh</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
@@ -401,7 +437,7 @@ const styles = StyleSheet.create({
     borderWidth: 5,
     borderColor: "white",
     borderRadius: 10,
-    padding: 5,
+    padding: 10,
     margin: 10,
     color: "white",
     width: "80%",

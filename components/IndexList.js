@@ -1,5 +1,5 @@
 import * as React from "react";
-import { StyleSheet, Text, ScrollView } from "react-native";
+import { StyleSheet, Text, ScrollView, View } from "react-native";
 import { IndexCard } from "./IndexCard";
 
 export function IndexList({ asteroidData }) {
@@ -10,7 +10,9 @@ export function IndexList({ asteroidData }) {
           <IndexCard key={asteroid.id} asteroid={asteroid} />
         ))
       ) : (
-        <Text style={styles.loadingText}>Loading ...</Text>
+        <View style={styles.centerView}>
+          <Text style={styles.loadingText}>Loading ...</Text>
+        </View>
       )}
     </ScrollView>
   );
@@ -30,6 +32,12 @@ const styles = StyleSheet.create({
   },
   scrollPanel: {
     marginBottom: 50,
+  },
+  centerView: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 30,
   },
 });
 /*
