@@ -20,7 +20,7 @@ const background = require("../assets/background.png");
 const formatDate = (date) =>
   date.getFullYear() +
   "-" +
-  ("" + date.getMonth() + 1).padStart(2, "0") +
+  ("" + (date.getMonth() + 1)).padStart(2, "0") +
   "-" +
   ("" + date.getDate()).padStart(2, "0");
 
@@ -52,12 +52,10 @@ export function IndexView() {
         const todayString = formatDate(today);
         const tomorrowString = formatDate(tomorrow);
 
-        // const rawData = require("../sampleData/sampleData.json");
-
         const rawData = await axios.get(
-          `https://api.nasa.gov/neo/rest/v1/feed?start_date=${todayString}&end_date=${tomorrowString}&api_key=j61KmanhEfIQUHCtW3XqzEwgfZT4Pw6zfF4SnJuE`
+          `https://api.nasa.gov/neo/rest/v1/feed?start_date=${todayString}&end_date=${tomorrowString}&api_key=${process.env.NASA_API_KEY}`
         );
-        // console.log(rawData.data.near_earth_objects);
+
         if (rawData) {
           const asteroidsOnly = Object.values(
             rawData.data.near_earth_objects
@@ -147,7 +145,6 @@ export function IndexView() {
       }
     }
     fetchData();
-    // console.log(asteroidData);
   }, [asteroidData]);
 
   React.useEffect(() => {
@@ -206,7 +203,7 @@ export function IndexView() {
             asteroid.estimated_diameter.feet.estimated_diameter_max
           ).toPrecision(3)
         );
-        // const roughSize = approx(maxSize);
+
         const isHazard = asteroid.is_potentially_hazardous_asteroid;
 
         return {
